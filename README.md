@@ -1,2 +1,2 @@
 # beam
-An interactive particles beam animation
+An interactive particle beam animation
