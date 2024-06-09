@@ -1,18 +1,10 @@
-/*
-	SmallPRNG library for JavaScript. Not special, 
-	not optimized, not perfect. It produces pseudo-
-	random numbers by manipulating a context which 
-	was initialized with a seed. 
-	
-	MIT licensed, use wherever you like, but a link
-	back to my CodePen (ImagineProgramming) or website
-	is appreciated (http://www.imagine-programming.com)
-	
-	Based on:
-	http://burtleburtle.net/bob/rand/smallprng.html
-*/
-
+/* library head */
 (function(target, name) {
+	/* SmallPRNG library for JavaScript.
+	 * Not special, not optimized, not perfect.
+	 * It produces pseudo-random numbers by manipulating a context which was initialized with a seed.
+	 */
+
 	// maximum randval for .random([max/min [, max]])
 	var RMAX = 0x7FFFFFFF;
 	
@@ -123,88 +115,6 @@
 	
 	target[name] = SmallPRNG;
 }(window, "SmallPRNG"));
-
-/*
-	jQuery was only used to set up a quick
-	interface. Don't be mad :(
-	
-	This code is not required, use the lib
-	above if you really really want to use
-	this junk.
-	
-	mainPen is used to detect the showcase pen,
-	future pens might refer to this one and they
-	should not execute this code.
-*/
-
-var mainPen = document.getElementById("main-pen");
-if(mainPen) {
-	$(function() {
-		var rctx = new SmallPRNG(1337);
-		var $seedField = $('input[name="seed"]');
-		var $timeSeed = $('input[name="time"]');
-		var $min = $('input[name="min"]');
-		var $max = $('input[name="max"]');
-		var $rval = $('input[name="rval"]');
-		var $rmax = $('input[name="rmax"]');
-		var $rmm = $('input[name="rmm"]');
-		var $stp = $('#stepper');
-
-		$timeSeed.click(function() {
-			var time = (new Date()).getTime();
-			$seedField.val(time);
-			rctx = new SmallPRNG(+time);
-			return false;
-		});
-
-		$seedField.change(function() {
-			rctx = new SmallPRNG(+$(this).val());
-			return false;
-		});
-
-		var dumpCTX = function(r) {
-			if(r) {
-				$("#rr").text(r);
-			}
-			$("#ra").text(rctx.a);
-			$("#rb").text(rctx.b);
-			$("#rc").text(rctx.c);
-			$("#rd").text(rctx.d);
-			$("#rs").text(rctx.s);
-		};
-
-		$rval.click(function() {
-			var r = rctx.randval();
-			dumpCTX(r);
-			return false;
-		});
-
-		$rmax.click(function() {
-			var max = +$max.val();
-			var r = rctx.random(max);
-			dumpCTX(r);
-			return false;
-		});
-
-		$rmm.click(function() {
-			var min = +$min.val();
-			var max = +$max.val();
-			var r = rctx.random(min, max);
-			dumpCTX(r);
-			return false;
-		});
-
-		$stp.click(function() {
-			rctx.step();
-			dumpCTX();
-			return false;
-		});
-
-		$rval.click();
-	});  
-}
-
-/* ============================================== */
 
 // EventListener | CC0 | github.com/jonathantneal/EventListener
 this.Element && Element.prototype.attachEvent && !Element.prototype.addEventListener && (function () {
@@ -775,8 +685,7 @@ this.Element && Element.prototype.attachEvent && !Element.prototype.addEventList
 	root.RGB = RGB;
 }(window));
 
-/* ============================================== */
-
+/* main body */
 +(function (root) {
 	"use strict";
 	var Vector3D = function Vector3D(x, y, z) {
@@ -1328,6 +1237,25 @@ this.Element && Element.prototype.attachEvent && !Element.prototype.addEventList
 (function (root) {
 	"use strict";
 
+	function Move(that, event) {
+		if (event.pageX == null && event.clientX != null) {
+			var eventDoc = (event.target && event.target.ownerDocument) || document;
+			var doc = eventDoc.documentElement;
+			var body = eventDoc.body;
+			event.pageX =
+				event.clientX +
+				((doc && doc.scrollLeft) || (body && body.scrollLeft) || 0) -
+				((doc && doc.clientLeft) || (body && body.clientLeft) || 0);
+			event.pageY =
+				event.clientY +
+				((doc && doc.scrollTop) || (body && body.scrollTop) || 0) -
+				((doc && doc.clientTop) || (body && body.clientTop) || 0);
+		}
+
+		that.position.x = event.pageX;
+		that.position.y = event.pageY;
+	}
+
 	var MouseMonitor = function (element) {
 		this.position = new Vector3D(0, 0, 0);
 		this.state = { left: false, middle: false, right: false };
@@ -1335,30 +1263,14 @@ this.Element && Element.prototype.attachEvent && !Element.prototype.addEventList
 
 		var that = this;
 		element.addEventListener("mousemove", function (event) {
-			var dot, eventDoc, doc, body, pageX, pageY;
 			event = event || window.event;
-			if (event.pageX == null && event.clientX != null) {
-				eventDoc = (event.target && event.target.ownerDocument) || document;
-				doc = eventDoc.documentElement;
-				body = eventDoc.body;
-				event.pageX =
-					event.clientX +
-					((doc && doc.scrollLeft) || (body && body.scrollLeft) || 0) -
-					((doc && doc.clientLeft) || (body && body.clientLeft) || 0);
-				event.pageY =
-					event.clientY +
-					((doc && doc.scrollTop) || (body && body.scrollTop) || 0) -
-					((doc && doc.clientTop) || (body && body.clientTop) || 0);
-			}
+			Move(that, event);
 
-			that.position.x = event.pageX;
-			that.position.y = event.pageY;
+			return event.preventDefault();
 		});
-
 		element.addEventListener("contextmenu", function (event) {
 			return event.preventDefault();
 		});
-
 		element.addEventListener("mousedown", function (event) {
 			if (event.which === 1) that.state.left = true;
 			if (event.which === 2) that.state.middle = true;
@@ -1366,8 +1278,27 @@ this.Element && Element.prototype.attachEvent && !Element.prototype.addEventList
 
 			return event.preventDefault();
 		});
-
 		element.addEventListener("mouseup", function (event) {
+			that.state.left = that.state.middle = that.state.right = false;
+
+			return event.preventDefault();
+		});
+
+		element.addEventListener("touchmove", function (event) {
+			event = event || window.event;
+			Move(that, event.touches[0]);
+
+			return event.preventDefault();
+		});
+		element.addEventListener("touchstart", function (event) {
+			var which = Math.floor(Math.random() * 3) + 1;
+			if (which === 1) that.state.left = true;
+			if (which === 2) that.state.middle = true;
+			if (which === 3) that.state.right = true;
+
+			return event.preventDefault();
+		});
+		element.addEventListener("touchend", function (event) {
 			that.state.left = that.state.middle = that.state.right = false;
 
 			return event.preventDefault();
