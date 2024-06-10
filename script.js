@@ -1234,6 +1234,8 @@ this.Element && Element.prototype.attachEvent && !Element.prototype.addEventList
 	root.Perlin = Perlin;
 })(window);
 
+var touchMode = 0;
+
 (function (root) {
 	"use strict";
 
@@ -1291,10 +1293,9 @@ this.Element && Element.prototype.attachEvent && !Element.prototype.addEventList
 			return event.preventDefault();
 		});
 		element.addEventListener("touchstart", function (event) {
-			var which = Math.floor(Math.random() * 3) + 1;
-			if (which === 1) that.state.left = true;
-			if (which === 2) that.state.middle = true;
-			if (which === 3) that.state.right = true;
+			if (touchMode === 0) that.state.left = true;
+			if (touchMode === 1) that.state.right = true;
+			if (touchMode === 2) that.state.middle = true;
 
 			return event.preventDefault();
 		});
@@ -1411,13 +1412,19 @@ window.addEventListener("load", function () {
 		settings = {
 			particleNum: 5000,
 			fadeOverlay: true,
-			rotateColor: true,
+			rotateColor: false,
 			staticColor: "#9a1aff"
-		};
+		},
+		buttons = {
+			change: function () {
+				touchMode = (touchMode + 1) % 3;
+			}
+		}
 
 	// dat.gui stuff, 2 folders with a few properties
 	var f1 = gui.addFolder("Particles"),
 		f2 = gui.addFolder("Colors");
+		f3 = gui.addFolder("Effects");
 
 	f1.add(settings, "particleNum", 1000, 20000)
 		.step(10)
@@ -1444,8 +1451,11 @@ window.addEventListener("load", function () {
 	f2.add(settings, "rotateColor").name("Rotate Color");
 	f2.addColor(settings, "staticColor").name("Static Color");
 
+	f3.add(buttons, "change").name("Change Mode");
+
 	f1.open();
 	f2.open();
+	f3.open();
 	gui.close();
 
 	// seed perlin with random bytes from SmallPRNG
